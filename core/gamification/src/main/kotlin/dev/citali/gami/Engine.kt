@@ -65,6 +65,12 @@ data class PullResult(
     val pityTriggered: Boolean,
 )
 
+data class QuestProgressView(
+    val quest: QuestDef,
+    val units: Long,
+    val claimed: Boolean,
+)
+
 data class RatesView(
     val bannerId: String,
     val cost: Points,
@@ -468,7 +474,6 @@ class GamificationEngine(
     ): Long {
         if (requested <= 0) return 0
         var remaining = requested
-        val capKey = config.dailyCaps.keys.filter { it != "*" && key.startsWith(it) }.aining = requested
         val capKey = config.dailyCaps.keys.filter { it != "*" && key.startsWith(it) }.maxByOrNull { it.length }
         if (capKey != null) {
             val spent = ledger.sumPoints(capKey, day)
