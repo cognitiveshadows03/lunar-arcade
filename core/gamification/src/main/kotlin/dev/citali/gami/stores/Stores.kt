@@ -109,6 +109,3 @@ interface QuestStore {
         windowKey: String,
     )
 }
-
-@Suppress("unused") // re-exported for hosts implementing stores; Rarity lives in Domain.
-private typealias StoreRarity = Rarity
