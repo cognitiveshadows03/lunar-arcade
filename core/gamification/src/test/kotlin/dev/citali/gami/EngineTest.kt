@@ -24,7 +24,7 @@ class EngineTest {
     private val zone: ZoneId = ZoneOffset.UTC
     private val day1 = LocalDate.of(2026, 1, 1)
 
-    private class Rig(
+    private data class Rig(
         val engine: GamificationEngine,
         val profile: InMemoryProfileStore,
         val inventory: InMemoryInventoryStore,
