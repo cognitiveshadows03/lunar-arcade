@@ -159,25 +159,34 @@ class GamificationEngine(
     private val ledger: LedgerStore,
     private val inventory: InventoryStore,
     private val profile: ProfileStore,
-    private val clock: Clock,            // java.time.Clock — fake it in tests
+    private val quests: QuestStore,
+    private val zoneId: ZoneId = ZoneId.systemDefault(),
     private val rng: Random = Random,
 ) {
     /** Process one event → awards + quest progress + level-ups + streak updates. */
     suspend fun process(event: GameEvent): EngineOutcome
 
     /** Spend points → roll items → auto-salvage dupes. Throws if broke. */
-    suspend fun pull(bannerId: String, count: Int = 1): PullResult
+    suspend fun pull(bannerId: String, count: Int = 1, refId: String = …): PullResult
 
     /** Deterministic shard-shop purchase. */
-    suspend fun redeem(itemId: String): Collectible
+    suspend fun redeem(itemId: String, refId: String = …): Collectible
 
-    /** Repair a broken streak (host decides pts-vs-ad UX; engine enforces 1/7d). */
-    suspend fun repairStreak(paidWith: RepairSource): StreakState
+    /** Spend points for a sink (streak-repair payment, …). False when broke. */
+    suspend fun spend(points: Points, reason: String, refId: String, day: LocalDate = …): Boolean
+
+    /** Repair a broken streak (host calls spend() first for pts, or nothing for ad-paid). */
+    suspend fun repairStreak(today: LocalDate): StreakState
 
     suspend fun state(): PlayerState
     fun rates(bannerId: String): RatesView  // → rendered verbatim on the Rates screen
 }
 ```
+
+Threading: the engine is NOT internally synchronized — hosts serialize
+calls (a Mutex in the repository). Balance checks and ledger appends
+assume no concurrent mutation. (All timestamps come from host events, so
+no Clock dependency is needed.)
 
 Pull algorithm: weighted rarity roll (basis points) → uniform item within
 rarity → new? add to inventory : salvage to shards → increment pity counter
@@ -194,9 +203,17 @@ Anti-time-travel: track max observed date; backward dates never regress state.
 ```kotlin
 interface LedgerStore {
     suspend fun append(e: LedgerEntry): Boolean  // false if refId already seen
-    suspend fun sumPoints(sourcePrefix: String, day: LocalDate): Long
-    suspend fun count(sourcePrefix: String, day: LocalDate): Long
+    suspend fun sumPoints(prefix: String, day: LocalDate): Long      // cap-counted rows only
+    suspend fun positiveTags(prefix: String, day: LocalDate): Set<String>  // tags with net > 0
+    suspend fun count(prefix: String, day: LocalDate): Long
 }
+```
+
+`LedgerEntry.countsTowardCaps` is false for pure spends (pulls, redeems,
+repair payments) so spending can never free up earn-room under the daily
+caps. Habit undo entries keep it true, so undoing correctly restores cap
+room — and perfect-day detection uses net-positive tags, so undoing can't
+fake a perfect day.
 interface InventoryStore {
     suspend fun ownedIds(): Set<String>
     suspend fun add(id: String)
