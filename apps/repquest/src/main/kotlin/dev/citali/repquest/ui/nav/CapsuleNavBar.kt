@@ -3,7 +3,7 @@
 package dev.citali.repquest.ui.nav
 
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.core.animateColorAsState
+import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement

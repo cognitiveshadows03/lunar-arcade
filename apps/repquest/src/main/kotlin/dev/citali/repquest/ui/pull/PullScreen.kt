@@ -3,8 +3,7 @@
 package dev.citali.repquest.ui.pull
 
 import androidx.compose.animation.core.animateIntAsState
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -166,7 +165,7 @@ private fun RatesDialog(
         onDismissRequest = onDismiss,
         title = { Text("Drop rates") },
         text = {
-            Column(Arrangement.spacedBy(6.dp)) {
+            Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
                 vm.rates.percents.entries.sortedBy { it.key }.forEach { (rarity, pct) ->
                     Row {
                         Text(rarity.name, modifier = Modifier.weight(1f), color = RarityTheme.chip(rarity), fontWeight = FontWeight.SemiBold)
