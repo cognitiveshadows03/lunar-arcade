@@ -44,6 +44,8 @@ dependencies {
     implementation(platform(libs.compose.bom))
     implementation(libs.compose.ui)
     implementation(libs.compose.material3)
+    implementation(libs.material.icons.extended)
     implementation(libs.activity.compose)
+    implementation(libs.lifecycle.viewmodel.compose)
     implementation(libs.coroutines.core)
 }

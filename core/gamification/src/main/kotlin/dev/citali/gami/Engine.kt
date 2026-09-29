@@ -419,6 +419,20 @@ class GamificationEngine(
         )
     }
 
+    /** Live quest progress for the current windows (drives progress bars). */
+    suspend fun questProgress(today: LocalDate = LocalDate.now(zoneId)): List<QuestProgressView> =
+        config.quests.map { quest ->
+            val key = QuestEngine.windowKey(quest.window, today)
+            QuestProgressView(
+                quest = quest,
+                units = quests.progress(quest.id, key),
+                claimed = quests.claimed(quest.id, key),
+            )
+        }
+
+    /** Rewarded ads watched today (drives the x/5 cap UI). */
+    suspend fun adsWatched(today: LocalDate = LocalDate.now(zoneId)): Long = ledger.count("ad.topup", today)
+
     /**
      * Live drop rates for the Rates screen. Render this verbatim — never
      * hand-write odds anywhere.
@@ -454,6 +468,7 @@ class GamificationEngine(
     ): Long {
         if (requested <= 0) return 0
         var remaining = requested
+        val capKey = config.dailyCaps.keys.filter { it != "*" && key.startsWith(it) }.aining = requested
         val capKey = config.dailyCaps.keys.filter { it != "*" && key.startsWith(it) }.maxByOrNull { it.length }
         if (capKey != null) {
             val spent = ledger.sumPoints(capKey, day)
